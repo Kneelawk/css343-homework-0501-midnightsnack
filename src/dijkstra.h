@@ -5,7 +5,7 @@
 #ifndef DIJKSTRA_H
 #define DIJKSTRA_H
 #include <functional>
-#include <limits.h>
+#include <climits>
 #include <map>
 #include <queue>
 #include <set>
@@ -13,6 +13,10 @@
 #include <string>
 
 namespace dijkstra {
+    constexpr int SOLVE_INCOMPLETE = 0;
+    constexpr int SOLVE_COMPLETE = 1;
+    constexpr int SOLVE_NO_SOLUTION = 2;
+
     inline char getAt(const std::string &field, const size_t width, const size_t x, const size_t y) {
         // width + 1 because we never removed the \n characters
         return field[x + (width + 1) * y];
@@ -127,7 +131,9 @@ namespace dijkstra {
 
         Node *found = nullptr;
 
-        void addAroundCur(Node *cur, std::vector<Node *> &found) {
+        bool addAroundCur(Node *cur, std::vector<Node *> &found) {
+            bool addedAny = false;
+
             for (size_t moveI = 0; moveI < movesetCount; moveI++) {
                 size_t nextX = cur->pos.x;
                 size_t nextY = cur->pos.y;
@@ -149,10 +155,14 @@ namespace dijkstra {
                             if (there == endChar) {
                                 found.push_back(nextNode);
                             }
+
+                            addedAny = true;
                         }
                     }
                 }
             }
+
+            return addedAny;
         }
 
     public:
@@ -179,7 +189,6 @@ namespace dijkstra {
                     if (width1 == 0) {
                         width1 = width2;
                     } else if (width2 != width1) {
-                        std::cout << "width1: " << width1 << ", width2: " << width2 << std::endl;
                         throw std::invalid_argument("input string lines have different lengths");
                     }
                     width2 = 0;
@@ -191,8 +200,6 @@ namespace dijkstra {
             if (width2 != width1) {
                 throw std::invalid_argument("input string last line has different length from other lines");
             }
-
-            std::cout << "startx: " << startX << ", startY: " << startY << std::endl;
 
             width_ = width1;
             height_ = height1;
@@ -221,15 +228,17 @@ namespace dijkstra {
             return newField;
         }
 
-        bool step() {
+        int step() {
             if (this->found != nullptr) {
-                return true;
+                return SOLVE_COMPLETE;
             }
 
             std::vector<Node *> found;
 
             if (next.empty()) {
-                addAroundCur(root, found);
+                if (!addAroundCur(root, found)) {
+                    return SOLVE_NO_SOLUTION;
+                }
             } else {
                 Node *node = next.top();
                 const int curCost = node->totalCost;
@@ -264,10 +273,10 @@ namespace dijkstra {
 
                 this->found = minNode;
 
-                return true;
+                return SOLVE_COMPLETE;
             }
 
-            return false;
+            return SOLVE_INCOMPLETE;
         }
 
         size_t width() const {
