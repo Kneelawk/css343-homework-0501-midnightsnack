@@ -24,18 +24,16 @@ int main(const int argc, char **argv) {
     while (!solver.step()) {
         if (animated && !first) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            std::cout << "\33[" << solver.height() << "A" << std::flush;
+            std::cout << "\33[" << (solver.height() + 1) << "A" << std::flush;
         }
 
         std::cout << solver.print() << std::endl;
-
-        if (!animated) {
-            std::cout << std::endl;
-        }
+        std::cout << std::endl;
 
         first = false;
     }
 
+    std::cout << "Total cost: " << solver.finalPath()->totalCost << std::endl;
     std::cout << "Found:\n" << solver.print() << std::endl;
 
     return 0;

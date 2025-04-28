@@ -232,14 +232,23 @@ namespace dijkstra {
                 addAroundCur(root, found);
             } else {
                 Node *node = next.top();
-                next.pop();
+                const int curCost = node->totalCost;
+                while (!next.empty()) {
+                    // try to do everything with the same cost in a single step
+                    node = next.top();
+                    if (node->totalCost != curCost) {
+                        break;
+                    }
 
-                // only consider the highest-priority paths to each position
-                if (nextSet.find(node->pos) != nextSet.end()) {
-                    nextSet.erase(node->pos);
-                    lookedAt.insert(node->pos);
+                    next.pop();
 
-                    addAroundCur(node, found);
+                    // only consider the highest-priority paths to each position
+                    if (nextSet.find(node->pos) != nextSet.end()) {
+                        nextSet.erase(node->pos);
+                        lookedAt.insert(node->pos);
+
+                        addAroundCur(node, found);
+                    }
                 }
             }
 
@@ -267,6 +276,10 @@ namespace dijkstra {
 
         size_t height() const {
             return height_;
+        }
+
+        Node *finalPath() const {
+            return found;
         }
     };
 }
